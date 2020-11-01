@@ -12,7 +12,7 @@ public class EntryPoint {
         try {
 
             Map<Character, Integer> map = new HashMap<>();
-            File myObj = new File("filename.txt");
+            File myObj = new File("pan_tadeusz.txt");
             Scanner myReader = new Scanner(myObj);
             while (myReader.hasNextLine()) {
                 Map<Character, Integer> charactersInLine = DataInterpreter.countCharacters(myReader.nextLine());
