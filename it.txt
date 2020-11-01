@@ -1,0 +1,140 @@
+
+Program aisd23 jest wykorzystywany w dwóch ćwiczeniach: drugim (sortowanie metodami „standardowymi”) i trzecim (sortowanie z użyciem drzew binarnych oraz inne zastosowania takich drzew).
+Podstawowy opis programu znajduje się zatem w instrukcji do ćwiczenia nr 2. W niniejszej instrukcji
+przedstawiona zostanie tylko ta część programu, której używa się w ćwiczeniu nr 3.
+Kod programu jest rozbity na wiele plików lecz wykonanie ćwiczenia wymaga wprowadzenia do
+nielicznych z nich zaledwie kilku modyfikacji. Po wprowadzeniu dowolnej zmiany w kodzie należy
+usunąć poprzednie produkty kompilacji i ponownie skompilować cały projekt wpisując kolejno
+make clean i make. Poniżej wymienione są najważniejsze pliki, które mogą (lub powinny) być modyfikowane w ćwiczeniu.
+1. Podstawowe parametry eksperymentu (niezależne od badanego algorytmu) – plik control.h.
+Patrz instrukcja do ćwiczenia 2.
+2. Wybór rodzaju drzewa – plik control_drzewa.h. Zdefiniowane są tu makrodefinicje–flagi służące
+do wyboru badanego rodzaju drzewa oraz pozwalające sterować przebiegiem niektórych algorytmów. (Uwaga: pewne algorytmy sortowania – lub ich fragmenty – badane w ćwiczeniu nr 2 są wykorzystywane również jako części składowe algorytmów badanych w ćwiczeniu nr 3. Ustawienie
+w pliku control_sort-std.h flag dla algorytmów sortowania może mieć zatem wpływ na przebieg
+działania algorytmów „drzewiastych” z ćwiczenia nr 3).
+Poniżej znajduje się lista makrodefinicji dostępnych w pliku control_drzewa.h:
+● BADANIE_KOPCA, BADANIE_TURNIEJU, BADANIE_HUFFMANA, BADANIE_BST –
+wybór rodzaju badanego drzewa. Tylko jedna z tych flag może mieć wartość „tak”.
+● KOPCOWANIE_ZSTEPUJACE – flaga stosowana przy badaniu algorytmów kopcowych służąca do wyboru rodzaju zastosowanego algorytmu ukopcowania.Nazwa pochodzi od obrazowego przedstawienia zasady działania — w każdym ‚przebiegu’ kolejna wartość w kolejności ‚wypływa’ jak bąbelek powietrza na powierzchnie wody.
+
+W algorytmie tym w celu posortowania n elementów wykonujemy n‑1 przebiegów. W każdym przebiegu zaczynamy od początku zbioru, bierzemy dwa elementy i zamieniamy je miejscami tak, aby większy był ‚wyżej’ (lub z większym indeksem itp). W pierwszym kroku robimy to dla elementów 1 i 2, w drugim kroku dla 2 i 3 itd. Każdy przebieg ‚wyciąga’ do góry kolejny element w kolejności, po wykonaniu wszystkich przebiegów nasz zbiór jest posortowany.
+
+Algorytm ten jest najmniej optymalny z tych podstawowych i bardzo nieefektywny obliczeniowo — złożoność to O(n^2). Ma on jednak złożoność pamięciową O(1) (oznacza to, że poza miejscem potrzebnym do przechowywania sortowanego zbioru, nie wymaga dodatkowej pamięci).
+
+Zaletą jest trywialna implementacja i przewidywalna ilość operacji, identyczna dla przypadku optymistycznego jak i pesymistycznego.
+Algorytm ten jest najpopularniejszy, jeśli chodzi o ilość zastosowań, ponieważ w ogólnym i uśrednionym przypadku jest on najbardziej optymalny, a jednocześnie prosty w implementacji. Jego wadą jest negatywny przypadek, kiedy to złożoność wynosi n^2 .
+
+Algorytm jest rekursywny, tj. odwołuje się do samego siebie i jest przykładem podejścia dziel i zwyciężaj (divide and conquer). W każdym kroku ze zbioru elementów wybieramy dowolny element (nazywany pivot; może to być po prostu pierwszy z brzegu lub losowy, dla nieuporządkowanych danych nie ma to znaczenia) a następnie dzielimy pozostałe elementy na dwie grupy — te mniejsze od wybranego elementu (‚przed nim’) oraz większe od niego (‚za nim’). Każdą z tych grup sortujemy w ten sam sposób.
+
+Algorytm ten jest stosunkowo prosty w implementacji, a jego wydajność jest zdecydowanie wystarczająca w ogólnym przypadku. Uśredniona złożoność obliczeniowa to O(n*log n), pamięciowa O(log n), ale w najgorszym przypadku złożoność obliczeniowa może wynieść O(n^2) — jest to zależne zarówno od danych wejściowych jak i sposobu doboru punktu pivot.
+
+Przykładowa implementacja (nieoptymalna, możliwe jest wykorzystanie tylko jednej struktury, tutaj tworzymy nowe dla zwiększenia czytelności):
+Ten rodzaj sortowania jest najszybszy obliczeniowo, ale ma bardzo dużą złożoność pamięciową rzędu O(m), gdzie m to ilość możliwych wartości, bliższe optymalnego jest O(n), gdzie n to liczba różnych wartości wejścia. W wersji ‚ortodoksyjnej’ polega na stworzeniu mapy pomiędzy możliwymi wartościami, a ilością ich wystąpień w zbiorze, po czym odtworzeniu zbioru na tej podstawie.
+
+Ponieważ takie podejście jest możliwe właściwie tylko dla liczb i to w określonym zakresie, często stosowane jest połączenie tego podejścia oraz innego algorytmu — sortowanie przez zliczanie służy do pogrupowania wstępnego, a następnie w każdej grupie korzystając z innego algorytmu wykonujemy właściwe sortowane. Przykładem może być sortowanie ciągów znaków — grupujemy je najpierw wg pierwszej litery w 26 grup i każdą z nich sortujemy osobno, następnie scalając wyniki.
+
+Przykładowa implementacja (wersja ‚dosłowna’ — z odtwarzaniem wartości; założenie: wejście to tylko liczby z zakresu 0‑ZAKRES_WARTOSCI_MAX):
+Jest to kolejny przykład podejścia dziel i rządź — w tym wypadku polega on na podziale zbioru na n równych podzbiorów (najczęściej jednoelementowych) a następnie scalaniu ich ze sobą uzyskując większe, posortowane podzbiory. Najprostsza implementacja jest rekurencyjna, ale nie wynika to bezpośrednio z samego algorytmu — scalanie może się odbywać iteracyjnie, dołączając kolejne podzbiory do jednego ‚posortowanego’. Dużą zaletą tego algorytmu jest możliwość zrównoleglenia — operacje sortowania można wykonywać na kilku wątkach lub nawet na wielu różnych maszynach w tym samym czasie.
+
+Przykładowa implementacja (ponownie, nie jest to implementacja optymalna, ale zgodna z definicją i obrazująca koncepcje).
+Sortowanie przez kopcowanie (częściej spotykaną nazwą, także w polskiej literaturze, jest heap sort) to kolejny z algorytmów mający praktyczne zastosowanie — jego wydajność jest najczęściej minimalnie mniejsza niż QuickSort, ale wydajność pesymistyczna jest zdecydowanie lepsza. Polega on na budowaniu kopca — czyli struktury, w której elementy są posortowane w określonym porządku — a następnie iteracyjnym dodawaniu kolejnych elementów zbioru. Po każdym dodaniu konieczne jest przywrócenie właściwości kopca, tzn. uporządkowanie elementów.
+
+Kopiec jest strukturą podobną do drzewa — pod kątem złożoności wstawienie jednego elementu wymaga maksymalnie log(n) operacji. Dlatego złożoność w pesymistycznym przypadku wynosi tyle samo, co w ogólnym przypadku i jest równa nlog n. Z punktu widzenia tego algorytmu nie ma pesymistycznych przypadków, nie ma też optymistycznych przypadków — jego złożoność jest przewidywalna co czyni go preferowanym w niektórych zastosowaniach, szczególnie przy obliczeniach czasu rzeczywistego (np. w sterowaniu procesami produkcyjnymi, systemach krytycznych takich jak podsystemy w samolotach itp). Algorytm ten ma złożoność pamięciową O(1), obliczeniową O(n log n).
+
+Ważną czynnością związaną z tablicą jest sortowanie umieszczonych w niej danych, ponieważ nieporównywalnie łatwiej operuje się na danych, które są posortowane, czyli ustawione w zadanym porządku. 
+W naszych algorytmach będziemy omawiać sortowanie liczb w celu ustawienia ich od najmniejszej do największej, czyli w porządku niemalejącym. Zakładamy, że tablice, które sortujemy mają co najmniej dwa elementy.
+
+
+Sortowanie przez wybór (selectionsort) – idea tej metody jest dość prosta: w tablicy znajdujemy najmniejszy element i zamieniamy go miejscem z pierwszym elementem tablicy. Jeśli najmniejszy element występuje wielokrotnie, to będziemy brali pod uwagę ten, który znajduje się najbliżej początku tablicy. Następnie we fragmencie tablicy, który obejmuje elementy od drugiego do ostatniego, poszukujemy minimum i zamieniamy je miejscem z drugim elementem tablicy. Dwa pierwsze elementy tablicy to już posortowana część. Będziemy tak postępować, dodając za każdym razem kolejny element do posortowanej części, aż dojdziemy do ostatniego elementu tablicy.
+Algorytmy sortowania są zazwyczaj klasyfikowane według:
+
+złożoności (pesymistyczna, oczekiwana i obliczeniowa) – zależność liczby wykonanych operacji w stosunku od liczebności sortowanego zbioru (n). Typową, dobrą złożonością jest średnia O(n log n) i pesymistyczna Ω(n²). Idealną złożonością jest O(n). Algorytmy sortujące nie przyjmujące żadnych wstępnych założeń dla danych wejściowych wykonują co najmniej O(n log n) operacji w modelu obliczeń, w którym wartości są "przezroczyste" i dopuszczalne jest tylko ich porównywanie (w niektórych bardziej ograniczonych modelach istnieją asymptotycznie szybsze algorytmy sortowania)
+Algorytm sortowania przez wstawienie
+
+Jeśli będziemy chcieli utworzyć drzewo BST, to staniemy przed koniecznością dodawania do niego nowych węzłów. Zasada pracy algorytmu dołączającego węzeł jest następująca:
+
+Jeśli drzewo jest puste, to nowy węzeł staje się jego korzeniem.
+
+W przeciwnym razie porównujemy klucz wstawianego węzła z kluczami kolejnych węzłów, idąc w dół drzewa. Jeśli klucz nowego węzła jest mniejszy od klucza aktualnie odwiedzonego węzła w drzewie, to przechodzimy do lewego syna. Inaczej przechodzimy do prawego syna. Całą procedurę kontynuujemy do momentu, aż dany syn nie istnieje. Wtedy dołączamy nowy węzeł na jego miejsce i kończymy.
+
+Program generuje 20 losowych kluczy z zakresu od 1 do 10, tworzy z nich węzły i wstawia do drzewa BST. Na koniec drzewo zostaje zaprezentowane algorytmem prezentacji drzew, który omówiliśmy we wcześniejszym artykule. Procedura wstawiania węzła do drzewa BST jest nieco zmodyfikowana – przyjmuje jako parametry referencję do zmiennej przechowującej adres korzenia oraz wartość klucza k. Sam węzeł jest tworzony dynamicznie wewnątrz procedury.
+
+Drzewo to struktura danych w której - podobnie jak dla listy łączonej - dane przechowywane są w węzłach. W odróżnieniu od listy łączonej, każdy węzeł drzewa może pamiętać dowolną ilość następników, nadając całej strukturze (wszystkim jej węzłom) hierarchiczny kształt przypominający drzewo. Rysunek poniżej pokazuje przykład drzewa: strzałki oznaczają w nim, że węzeł wskazywany jest pamiętany przez węzeł, z którego wychodzi strzałka:
+Idea usuwania jest następująca: najpierw znajdujemy wierzchołek v z etykietą e oraz  ojca tego wierzchołka, oznaczonego tu przez y.  Jeżeli v jest liściem, to wystarczy usunąć w y referencję do v. Jeżeli v ma tylko jednego syna, to usunięcie wierzchołka v polega na zastąpieniu w y referencji do v, referencją do jedynego syna wierzchołka v. Jeżeli v ma dwa następniki, to znajdujemy w prawym jego poddrzewie wierzchołek w o najmniejszej etykiecie (lub dualnie, wierzchołek o największej etykiecie w lewym poddrzewie). Zastępujemy etykietę wierzchołka v znalezioną etykietą, a wierzchołek w usuwamy z drzewa. Takie postępowanie modyfikuje tylko w niewielkim stopniu strukturę drzewa: wierzchołek rzeczywiście usuwany z drzewa znajduje się zawsze na końcu pewnej ścieżki. Operacja delete zwraca w wyniku drzewo, które jest argumentem tej operacji, jeśli e nie należało do drzewa, lub, gdy drzewo było puste.
+Proces usuwania elementu z drzewa BST przedstawiono na rysunku 7.6. Jeśli z drzewa na rysunku 7.6(a) usuwamy etykietę 6, to wynikiem jest drzewo na rysunku 7.6(b). Wierzchołek z etykietą 6 jest liściem, zostanie więc usunięty z drzewa wraz z dowiązaniem łączącym go z wierzchołkiem 7.  Jeśli z drzewa 7.6(a) usuwamy wierzchołek z etykietą 7, to ponieważ ma on tylko jeden następnik, w wyniku usunięcia etykiety 7, lewym synem wierzchołka 8 będzie wierzchołek z etykietą 6, jak na rysunku 7.6(c). Jeśli z drzewa 7.6(a) usuwamy etykietę 5, to ponieważ wierzchołek z tą  etykietą ma dwa następniki, etykieta 5 zostanie zastąpiona najmniejszą etykietą  prawego poddrzewa, tzn. szóstką, a wierzchołek z etykietą 6 zostanie usunięty z drzewa.
+Najistotniejsza część prezentowanego algorytmu znajduje się w liniach 3-12. W tych liniach opisane są zmiany, których trzeba dokonać, gdy znajdziemy wierzchołek z etykietą e, zapamiętany w tym algorytmie na zmiennej v. Rozważamy dwa przypadki: gdy v ma co najwyżej jeden następnik i, gdy v na dokładnie dwa następniki. W obu przypadkach musimy z drzewa usunąć jeden wierzchołek. Ponieważ sam proces usuwania jest podobny, chociaż dotyczy różnych wierzchołków, wyodrębniliśmy ten fragment kodu w postaci procedury usun. Treść tej procedury jest dość kłopotliwa, gdyż musimy rozważyć kilka przypadków.
+
+Parametrami procedury są dwa wierzchołki y i v. Zakładamy, że skądinąd wiadomo, że y jest ojcem v, oraz wierzchołek v ma co najwyżej jeden następnik. Ten ew. jedyny następnik ma zastąpić v. W procedurze usuń zapamiętaliśmy ten wierzchołek na zmiennej x. Wyróżniamy przypadek, gdy v jest korzeniem, gdyż wtedy musi być zmieniony korzeń drzewa. Jeśli v nie jest korzeniem drzewa, to ojcu wierzchołka v przekazujemy wierzchołek x na miejsce wierzchołka v.
+W liniach 6-12 rozważany jest przypadek, gdy wierzchołek v, dla którego v.val = e, ma dwóch synów. W przedstawionym kodzie, zastępujemy etykietę wierzchołka v, najmniejszą z etykiet jego prawego poddrzewa. W pętli  w liniach 7-9 znajdujemy wierzchołek z, którego etykieta ma najmniejszą wartość w PD(v), oraz, na zmiennej pred, ojca tego wierzchołka. Zauważmy, że z albo jest liściem, albo ma tylko prawy następnik. Usuwanie wierzchołka z możemy więc zrealizować za pomocą procedury usun(pred,z).
+
+Koszt alorytmu
+
+Koszt algorytmu  jest zdeterminowany przez proces wyszukiwania elementu e i jest proporcjonalny do wysokości drzewa. W najgorszym razie jest to koszt O(n), gdzie n jest liczbą wierzchołków w danym drzewie. Koszt średni  jest natomiast logarytmiczny O(lg n). 
+
+Pytanie 8: Utworzono drzewo BST przez wstawianie kolejno elementów 4, 2, 8, 7, 5, 6, 9, 6 Jaka etykieta znajdzie się w wierzchołku drzewa, jeśli z tego drzewa usunięto etykietę korzenia stosując algorytm delete?  
+Algorytm sortowania przez wstawianie wykorzystuje poszukiwanie liniowe w celu znalezienia miejsca wstawiania wybranego elementu na liście uporządkowanej. Element wybrany/porównywany może być większy bądź równy, elementowi z uporządkowanej listy, lub mniejszy.
+
+Sortowanie przez wstawienie to algorytm, którego średni czas działania wynosi O(n2). Jest on skuteczny dla małej ilości danych. Jest to jeden z prostszych i jeden z bardziej znanych algorytmów sortowania. Jest on stabilny i nie wymaga dodatkowej pamięci.
+
+Algorytm sortowania przez selekcję
+Metoda ta nazywana jest sortowaniem przez wymianę gdyż na początku szukany jest najmniejszy element, po znalezieniu go jest on zamieniany z pierwszym elementem tablicy.
+
+W najgorszym przypadku każdy element powoduje jednokrotne przestawienie wszystkich poprzedzających go elementów, a wtedy liczba porównań wynosi: n*(n-1). Liczba porównań zależna jest od początkowego rozmieszczenia elementów w tablicy.
+
+Algorytm sortowanie przez scalanie
+Ideą działania algorytmu jest dzielenie zbioru danych na mniejsze zbiory, aż do uzyskania n zbiorów jednoelementowych, które same z siebie są posortowane
+
+Algorytm ten w każdym przypadku osiąga złożoność T(n) = n*log(n). Niestety algorytm MergeSort posiada większą złożoność pamięciową, potrzebuje do swojego działania dodatkowej, pomocniczej struktury danych.
+
+Algorytm sortowania szybkiego
+Zasada jego działania opiera się o metodę dziel i zwyciężaj. Zbiór danych zostaje podzielony na dwa podzbiory i każdy z nich jest sortowany niezależnie od drugiego.
+
+Optymistyczna złożoność obliczeniowa sortowania szybkiego wynosi O(n log n) i jest to jeden z najszybszych algorytmów sortujących (a na pewno najbardziej znany). Doskonale radzi sobie z sortowaniem wielkich tablic i został włączony do standardowej biblioteki języka C.
+
+Algorytm sortowania stogowego
+W zbiorze tworzymy kopiec, a następnie dokonujemy jego rozbioru. W wyniku wykonania tych dwóch operacji zbiór zostanie posortowany.
+
+Algorytm jest ciekawy z racji faktu, iż jest on szybki oraz nie pochłania zbyt wiele zasobów pamięci. Podstawową zaletą algorytmu jest to, że do stworzenia kopca wykorzystać można tę samą tablicę, w której początkowo znajdują się nieposortowane elementy. Dzięki temu uzyskuje się stałą złożoność pamięciową.
+złożoność pamięciowa
+sposób działania: algorytmy sortujące za pomocą porównań to takie algorytmy sortowania, których sposób wyznaczania porządku jest oparty wyłącznie na wynikach porównań między elementami; Dla takich algorytmów dolne ograniczenie złożoności wynosi Ω(n log n)
+stabilność: stabilne algorytmy sortowania utrzymują kolejność występowania dla elementów o tym samym kluczu (klucz – cecha charakterystyczna dla każdego elementu zbioru, względem której jest dokonywane sortowanie). Oznacza to, że dla każdych dwóch elementów R i S o tym samym kluczu, jeśli R wystąpiło przed S to po sortowaniu stabilnym R nadal będzie przed S
+KOPCOWANIE_ODWROCENIE – flaga stosowana przy badaniu algorytmów kopcowych.
+Ustawienie jej na „tak” powoduje odwrócenie kolejności rekordów w tablicy po zakończeniu
+sortowania metodą kopcową.
+● KOPCOWANIE_POPRAWKA – flaga stosowana przy badaniu algorytmów kopcowych. Służy
+do przyspieszenia sortowania przez kopcowanie z odcinaniem korzenia. Odcinany jest nie tylko
+korzeń ale i jego potomkowie jeżeli wartości ich kluczy są równe wartości klucza korzenia.
+● ROZMIAR_BAJTU – makrodefinicja stosowana przy badaniu algorytmu Huffmana. Określa
+rozmiar (w bitach) jednostkowej porcji informacji (dane wejściowe dzielone są właśnie na takie
+porcje).
+● NAZWA_PLIKU – makrodefinicja stosowana przy badaniu algorytmu Huffmana. Zawiera nazwę pliku z danymi wejściowymi. Standardowo jest to string „hamlet.txt” będący nazwą dostarczonego pliku z pełnym tekstem „Hamleta” Williama Szekspira
+Dla wskazanych przez prowadzącego algorytmów sortowania należy przystosować kod przykładowego programu do zaplanowanych pomiarów i symulacji. W zadaniach wymagających modyfikacji
+algorytmów konieczna jest weryfikacja poprawności działania własnych metod i zamieszczenie w
+sprawozdaniu zmodyfikowanego kodu.
+Przykładowe zadania do wykonania na ćwiczeniu (prowadzący może podać inne):
+1. Zbadać złożoność obliczeniową wskazanych algorytmów sortowania wziąwszy pod uwagę
+ewentualne początkowe uporządkowanie sortowanego zbioru danych.
+Zbadać stabilność wybranych algorytmów sortowania.
+3. Wyznaczyć złożoność obliczeniową sortowania przez kopcowanie z odcięciem liścia, z odcięciem korzenia oraz z odcięciem korzenia z poprawką. Aby zbadać wpływ zakresu wartości kluczy, należy wziąć pod uwagę przypadki kluczy bez powtórzeń oraz kluczy losowanych z możliwością powtórzeń z różnych zakresów (argument funkcji fillWithRandomRecords, wywoływanej w pliku main.cpp).
+4. Zaimplementować dla kopca zmodyfikowaną procedurę spływu korzenia w kierunku liścia
+(metoda fixDownHeap) – zamiast za każdym razem zamieniać węzeł z jego potomkiem o
+mniejszym kluczu należy zapamiętać korzeń w buforze i „przesuwać w górę” kolejne następniki
+tak długo, jak długo ich klucze będą mniejsze lub równe od klucza swojego poprzednika. Na
+końcu procedury znajdujący się w buforze węzeł wstawić na ostatnią „opróżnioną” pozycję. Należy użyć zmodyfikowanej metody do sortowania przez kopcowanie (w wersji „zamiana korzenia z liściem”) i porównać czas wykonania z oryginalną implementacją dla różnych liczności
+sortowanych zbiorów.
+5. Zmodyfikować operację spływu węzła do liścia, tak by składała się z dwóch etapów: 1) dany
+węzeł jest bezwarunkowo zamieniany z mniejszym ze swoich potomków tak długo, aż stanie się
+liściem (czyli w stosunku do „standardowej” procedury spływu eliminowane jest jedno porównanie na każdym poziomie drzewa); 2) spływ tego węzła w kierunku przeciwnym – do korzenia. Można oczekiwać, że „powrót” węzła w kierunku korzenia zakończy się bardzo szybko – w
+kopcu bowiem około połowy elementów znajduje się na najniższym poziomie, około trzech
+czwartych – na najniższych dwóch poziomach itp. Sumarycznie zatem liczba porównań w zmodyfikowanym spływie do liścia może być znacząco mniejsza niż w procedurze oryginalnej.
+Zbadać prawdziwość tej hipotezy: należy użyć zmodyfikowanej metody do sortowania przez
+kopcowanie (w wersji „zamiana korzenia z liściem”) i porównać czas wykonania z oryginalną
+implementacją dla różnych liczności sortowanych zbiorów.
+6. Zbadać wydajność i porównać różne wersje algorytmu sortowania turniejowego.
+7. Zbadać zależności występujące dla stopnia kompresji pliku tekstowego z użyciem drzewa Huffmana, np. dla różnych tekstów (ale o podobnej objętości) w tym samym języku, dla tekstów o
+różnej objętości w tym samym języku, dla tekstów o tej samej objętości w różnych językach, itp
+8. Określić stopień kompresji pliku tekstowego z użyciem drzewa Huffmana dla różnych wartości
+rozmiaru elementarnej porcji danych („bajtu”) – znaleźć rozmiar, przy którym kompresja będzie
+największa. Zbadać zależność wartości tego parametru od języka i objętości tekstu.
+9. Zaimplementować wybrane (podane przez prowadzącego) metody równoważenia drzewa BST i
+przetestować ich stosowalność i skuteczność.
